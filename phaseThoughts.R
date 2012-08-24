@@ -57,37 +57,7 @@ for(i in 1:nrow(my.genotypes)) {
 }
 
 
-phaseReport <- function(genotypes,haplotypes,haploFreqs,outFormat="all")   {
-	## do conversion for genotypes and haplotypes.
-	genoTable <- genotypes
-	haploTable <- haplotypes	
 
-
-	phaseResults <- data.frame()
-	for(i in 1:nrow(genoTable)) {
-		thisGenotype <- genoTable[i,]
-		genoName <- rownames(thisGenotype)
-		result <- getValidHaploGroups(thisGenotype , haplotypes=haploTable)
-		for(j in 1:length(result))  {
-			
-			#for(k in 1:length(names(result[[j]])))  {			
-			
-
-			#}	
-			thisLH=NA	
-			#thisLH <- getHaploGroupProb()
-			thisRow <- data.frame(id=genoName,n.validGroups = length(result),haploGroup=paste(sort(names(result[[j]])), collapse="/"), likelihood=thisLH)
-			phaseResults <- rbind(phaseResults, thisRow)
-		}
-			
-	}
-	
-	phaseResults <- phaseResults[order(phaseResults$id,phaseResults$likelihood),]
-	if(outFormat=="top")  {
-		phaseResults <- phaseResults[match(unique(phaseResults$id),phaseResults$id),]
-	}
-	return(phaseResults )
-}
 
 test <- phaseReport(genotypes=my.genotypes,haplotypes)
 test <- phaseReport(genotypes=my.genotypes,haplotypes, outFormat="top")
