@@ -134,7 +134,8 @@ for(i in 1:nrow(my.genotypes)) {
 
 
 
-##  could use custom callGenotypes to provide sequence as allele name.
+##  could use custom callGenotypes to provide sequence as allele name. NO, could need to be replacement of 
+## the master function as callGenotypes.default only received the table of frequencies, not the full mlgtResult object.
 
 library(mlgt)
 Sys.setenv(BLASTALL_PATH="C:/Users/Public/Apps/Blast/bin/blastall.exe",
