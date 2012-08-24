@@ -2,7 +2,7 @@
 
 
 ###############CURRENT RUN EXAMPLES
-source("C:/Users/Dave/HalfStarted/mlgt/phaseFunctions.R")
+source("C:/Users/Dave/HalfStarted/mlPhaser/mlPhaser.R")
 
 
 
@@ -21,7 +21,7 @@ names(haploFreqs) <- rownames(haplotypes)
 #### N.B. THIS IS DIFFERENT EVERY TIME.
 my.genotypes <- simGenoFromHaplo(haploTable=haplotypes, haploFreqs=haploFreqs , 20) 
 
-source("C:/Users/Dave/HalfStarted/mlgt/phaseFunctions.R")
+source("C:/Users/Dave/HalfStarted/mlPhaser/mlPhaser.R")
 thisGenotype <- my.genotypes[1,]
 thisGenotype <- my.genotypes[11,]		# was double heterozygote when developing (random result).
  listValidHaplotypes(thisGenotype, haplotypes )
@@ -57,6 +57,40 @@ for(i in 1:nrow(my.genotypes)) {
 }
 
 
+phaseReport <- function(genotypes,haplotypes,haploFreqs,outFormat="all")   {
+	## do conversion for genotypes and haplotypes.
+	genoTable <- genotypes
+	haploTable <- haplotypes	
+
+
+	phaseResults <- data.frame()
+	for(i in 1:nrow(genoTable)) {
+		thisGenotype <- genoTable[i,]
+		genoName <- rownames(thisGenotype)
+		result <- getValidHaploGroups(thisGenotype , haplotypes=haploTable)
+		for(j in 1:length(result))  {
+			
+			#for(k in 1:length(names(result[[j]])))  {			
+			
+
+			#}	
+			thisLH=NA	
+			#thisLH <- getHaploGroupProb()
+			thisRow <- data.frame(id=genoName,n.validGroups = length(result),haploGroup=paste(sort(names(result[[j]])), collapse="/"), likelihood=thisLH)
+			phaseResults <- rbind(phaseResults, thisRow)
+		}
+			
+	}
+	
+	phaseResults <- phaseResults[order(phaseResults$id,phaseResults$likelihood),]
+	if(outFormat=="top")  {
+		phaseResults <- phaseResults[match(unique(phaseResults$id),phaseResults$id),]
+	}
+	return(phaseResults )
+}
+
+test <- phaseReport(genotypes=my.genotypes,haplotypes)
+test <- phaseReport(genotypes=my.genotypes,haplotypes, outFormat="top")
 
 ## TODO
 # Clean up!
@@ -153,7 +187,9 @@ load("C:/Users/Dave/NextGen/DNAseqLab/TestProject/TestRun_09_03_2012_mlgt0.14/my
 my.mlgt.Result.HLA_09_03_2012
 
 myMarkerList <- read.fasta("C:/Users/Dave/NextGen/DNAseqLab/HLA_29_02_2012/HLA_HR_Markers_20120320.fasta", as.string=T)	
-myPhasingMarkers <- myMarkerList[c("HLA_A2", "HLA_A3")]
+#myPhasingMarkers <- myMarkerList[c("HLA_A2", "HLA_A3")]
+myPhasingMarkers <- myMarkerList[c("HLA_B2", "HLA_B3")]
+myPhasingMarkers <- myMarkerList[c("HLA_C2", "HLA_C3")]
 # the default method to callGenotypes
 #my.genoytpes <- callGenotypes(my.mlgt.Result)
 
@@ -170,6 +206,9 @@ myPhasingMarkers <- myMarkerList[c("HLA_A2", "HLA_A3")]
  	#			header=T)
 
 markerImgtFileTable <- data.frame(marker=c("HLA_A2","HLA_A3"),imgtAlignFile=c("A_nuc.msf","A_nuc.msf"))
+markerImgtFileTable <- data.frame(marker=c("HLA_A2","HLA_A3","HLA_B2","HLA_B3","HLA_C2","HLA_C3"),
+					imgtAlignFile=c("A_nuc.msf","A_nuc.msf","B_nuc.msf","B_nuc.msf","C_nuc.msf","C_nuc.msf"))
+
 alignFilesSource <- 'ftp://ftp.ebi.ac.uk/pub/databases/imgt/mhc/hla/'
 # select a folder to store the alignments in. Here using current working directory.
  alignFilesDir <- getwd()	
@@ -184,8 +223,10 @@ for(thisMarker in names(myPhasingMarkers)) {
  		myPhasingMarkers[[thisMarker]][1], alleleAlignFile)
 }
 
-save(knownAlleleDb, file="knownAlleleDb.testPhasing.Rdata")
+#save(knownAlleleDb, file="knownAlleleDb.testPhasing.HLA_B.Rdata")
+#save(knownAlleleDb, file="knownAlleleDb.testPhasing.Rdata")
 
+#load(
 
 ### reformat the knownAlleleDb into a haploTypeTable.
 
@@ -207,7 +248,10 @@ for(thisMarker in names(myPhasingMarkers))  {
 }
 
 ## Need to convert haplotypes to haplotype tables with column for each marker
-hlaHaploTable <- merge(hlaAlleTableList[["HLA_A2"]], hlaAlleTableList[["HLA_A3"]], by="allele")
+## TODO: generalise this part.
+hlaHaploTable <- merge(hlaAlleTableList[["HLA_C2"]], hlaAlleTableList[["HLA_C3"]], by="allele")
+#hlaHaploTable <- merge(hlaAlleTableList[["HLA_B2"]], hlaAlleTableList[["HLA_B3"]], by="allele")
+#hlaHaploTable <- merge(hlaAlleTableList[["HLA_A2"]], hlaAlleTableList[["HLA_A3"]], by="allele")
 rownames(hlaHaploTable) <- hlaHaploTable$allele
 hlaHaploTable <- subset(hlaHaploTable, select=-allele)
  str(hlaHaploTable)
@@ -251,7 +295,7 @@ for(thisMarker in names(myPhasingMarkers))  {
 	}
 }
 
-my.genotypes.hla[[thisMarker]]@genotypeTable
+#my.genotypes.hla[[thisMarker]]@genotypeTable
 
 
 myTempGenotypes <- list()
@@ -270,7 +314,11 @@ for(thisMarker in names(myPhasingMarkers))  {
 	#rownames(myTempGenotypes[[thisMarker]]) <- myTempGenotypes[[thisMarker]][,"sample"]
 	myTempGenotypes[[thisMarker]] <- subset(myTempGenotypes[[thisMarker]], select=c("sample", paste(thisMarker,1,sep="."),paste(thisMarker,2,sep=".")))
 }
-my.genotypes.hla.refined <- merge(myTempGenotypes[['HLA_A2']],myTempGenotypes[['HLA_A3']], by="sample")
+# need to generalise this section
+#my.genotypes.hla.refined <- merge(myTempGenotypes[['HLA_A2']],myTempGenotypes[['HLA_A3']], by="sample")
+#my.genotypes.hla.refined <- merge(myTempGenotypes[['HLA_B2']],myTempGenotypes[['HLA_B3']], by="sample")
+my.genotypes.hla.refined <- merge(myTempGenotypes[['HLA_C2']],myTempGenotypes[['HLA_C3']], by="sample")
+
 rownames(my.genotypes.hla.refined) <- my.genotypes.hla.refined[,'sample']
 my.genotypes.hla.refined <- subset(my.genotypes.hla.refined, select=-sample)
 
