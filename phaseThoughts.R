@@ -1,6 +1,6 @@
 ## TODO
 # TODO	 work examples into mlPhaser.R
-# TODO Write function for #thisLH <- getHaploGroupProb()
+
 
 
 
@@ -69,7 +69,8 @@ fullHaploList <- tableHaploToList(haplotypes)		# could use this within above fun
 
 test <- phaseReport(genotypes=my.genotypes,haplotypes)
 test <- phaseReport(genotypes=my.genotypes,haplotypes, outFormat="top")
-test <- phaseReport(genotypes=my.genotypes,haplotypes,haploFreqs, outFormat="top")	# not working.
+test <- phaseReport(genotypes=my.genotypes,haplotypes,haploFreqs)
+test <- phaseReport(genotypes=my.genotypes,haplotypes,haploFreqs, outFormat="top")	
 
 
 ## TODO

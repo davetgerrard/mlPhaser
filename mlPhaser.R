@@ -601,6 +601,30 @@ listHaploToTable <- function(haploList)  {
 
 #listHaploToTable(fullHaploList)
 
+#' Get haplotype group probability
+#' 
+#' Combine probabilities across a haplotype group
+#'
+#' Each haplotype might have a probability of being found. e.g. the population frequency.
+#' This function combines probabilities of a group of haplotypes
+#' 
+#' @param haploGroup A list of haplotypes. Only the names attribute is important.
+#' @param haploFreqs The frequencies of haplotypes as a named vector.
+#' @param method Only one method currently ("basic").
+#' @param returnLog Whether to output the combined probability as a natural log. Default=FALSE.
+#' 
+#' @return A numeric likelihood representing the combined probability across a group.
+#'
+#' @export
+#' @docType methods
+getHaploGroupProb <- function(haploGroup, haploFreqs, method="basic", returnLog=FALSE)  {
+	score <- sum(log(haploFreqs[names(haploGroup)]))
+	if(!returnLog) {
+		score <- exp(score)
+	}
+	return(score)
+}
+
 #' Best/all hapltype groups for a genotype
 #' 
 #' Attempts to find best/all haplotype groups that fully explain observed
@@ -625,7 +649,6 @@ phaseReport <- function(genotypes,haplotypes,haploFreqs,outFormat="all")   {
 	genoTable <- genotypes
 	haploTable <- haplotypes	
 
-
 	phaseResults <- data.frame()
 	for(i in 1:nrow(genoTable)) {
 		thisGenotype <- genoTable[i,]
@@ -637,18 +660,22 @@ phaseReport <- function(genotypes,haplotypes,haploFreqs,outFormat="all")   {
 			
 
 			#}	
-			thisLH=NA	
-			#thisLH <- getHaploGroupProb()
+			if(missing(haploFreqs))  {
+				thisLH=NA	
+			} else {
+				thisLH <- getHaploGroupProb(result[[j]], haploFreqs=haploFreqs)
+			}
 			thisRow <- data.frame(id=genoName,n.validGroups = length(result),haploGroup=paste(sort(names(result[[j]])), collapse="/"), likelihood=thisLH)
 			phaseResults <- rbind(phaseResults, thisRow)
 		}
 			
 	}
 	
-	phaseResults <- phaseResults[order(phaseResults$id,phaseResults$likelihood),]
+	phaseResults <- phaseResults[order(phaseResults$id,phaseResults$likelihood, decreasing=T),]
 	if(outFormat=="top")  {
 		phaseResults <- phaseResults[match(unique(phaseResults$id),phaseResults$id),]
 	}
+	phaseResults <- phaseResults[order(phaseResults$id),]	# need second reorder to retrieve sample order.
 	return(phaseResults )
 }
 
