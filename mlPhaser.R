@@ -1,6 +1,45 @@
+#' mlPhaser
+#'
+#' \tabular{ll}{
+#' Package: \tab mlPhaser\cr
+#' Type: \tab Package\cr
+#' Version: \tab 0.01\cr
+#' Date: \tab 2012-08-28\cr
+#' Author: \tab Dave T. Gerrard <david.gerrard@@manchester.ac.uk>\cr
+#' License: \tab GPL (>= 2)\cr
+#' LazyLoad: \tab yes\cr
+#' }
+#'
+#' mlPhaser
+#'
+#' Some text
+#'
+#' The main functions are: 
+#' \code{\link{phaseReport}}, \code{\link{getValidHaploGroups}},  
+#' 
+#' ...
+#' 
+#' @docType package
+#' @name mlPhaser-package
+NULL
 
-
-## creates genotypes from a table of hapotypes. Will use frequencies.
+## Simulates genotypes from a table of haplotypes. Will use frequencies.
+#' Simulate genotypes
+#' 
+#' Simulates genotypes from a table of haplotypes.
+#'
+#' Simulates n genotypes from a table of haplotypes. Genotypes will include one allele per 
+#' ploidy level. 
+#' 
+#' @param haploTable The list of haplotypes in table format
+#' @param haploFreqs A named vector of haplotype frequencies.
+#' @param n	How many genotypes to simulate. 
+#' @param  ploidy How many alleles per locus. Default = 2. 
+#' 
+#' @return A data.frame of genotypes. Each locus will have multiple colums as per the ploidy level.
+#'
+#' @export
+#' @docType methods
 simGenoFromHaplo <- function(haploTable, haploFreqs, n=1, ploidy=2)  {
 	
 	## put in checks that the haplotypes in haploTable have freqs in haploFreqs
@@ -30,11 +69,6 @@ simGenoFromHaplo <- function(haploTable, haploFreqs, n=1, ploidy=2)  {
 
 
 
-#unused!
-getPloidyFromGenoTable <- function(genotype)  {
-	
-}
-
 
 #####  this is based only on using known haplotypes. 
 ##  Each valid haplotype is found by intersecting across each locus.
@@ -42,6 +76,20 @@ getPloidyFromGenoTable <- function(genotype)  {
 ### Account for novel haplotypes?
 ## Could have optional call to list all possible haplotypes. (and assign very low probabilities to novel forms).
 ## This function relies on grep of loci names. Not good idea when loci names are "A1", "A10" etc. 
+#' List valid haplotypes
+#' 
+#' Select valid haplotypes (from a list) for a genotype
+#'
+#' Tests a set of haplotypes against a genotype to see if they are contained within.
+#' 
+#' @param genotype The genotype. Can be in data.frame or list of list format.
+#' @param haplotypes The haplotypes. Can be in data.frame or list of lists format.
+#' @param ploidy How many alleles per locus. Default=2.
+#' 
+#' @return A list of valid haplotypes (each as a list).
+#'
+#' @export
+#' @docType methods
 listValidHaplotypes <- function(genotype,haplotypes, ploidy=2)  {
 	# could generate haplotype list from fresh. Might be very long.	
 	
@@ -73,27 +121,6 @@ listValidHaplotypes <- function(genotype,haplotypes, ploidy=2)  {
 
 
 
-
-	# OLD
-	#validHaplos <- character()
-	#for(i in 1:length(lociNames))  {
-	#	thisLocus <- lociNames[i]
-	#	## this is very poor way to find columns. 
-	#	lociCols <- grep(thisLocus,colnames(genotype))
-	##	genotypes <- genotype[lociCols]
-	#	# rownames(haplotypes)[haplotypes[,"A"] == "a"]
-	#	theseHaplos <- character()
-	#	for(thisGenotype in genotypes) {
-	#		theseHaplos <- c(theseHaplos, rownames(haplotypeList)[haplotypeList[,thisLocus] == thisGenotype])
-	#	}
-	#	if(i == 1)  {
-	#		validHaplos <- theseHaplos
-	#	} else  {
-	#		validHaplos <- intersect(validHaplos,theseHaplos)
-	#	}
-	#	
-	#}
-
 	# NEW
 	validHaplos <- character()
 	for(i in 1:length(lociNames))  {
@@ -113,20 +140,6 @@ listValidHaplotypes <- function(genotype,haplotypes, ploidy=2)  {
 
 	validHaploList  <- haploList[validHaplos]
 
-
-	### need to turn list of validHaplotypes into consistent pairs/groups.
-	# e.g. bb,bb,bb -> bbb/bbb homozygote
-	#      ab,ab,ab -> aaa/bbb ; aab/bba ; abb/baa ; aba/bab etc. 
-	# Return complex data. 	with vector of haplos and list of pairs, each a list.
-	
-	#validGroups <- list()
-	# this bit needs to deal with ploidy > 2 . Recursive? 
-	# With ploidy > 2, there are then multiple options after each first ploidy.
-	#for(thisHaplo in validHaplos)  {
-	#	thisRemGeno <- remGeno(haplotypeList[thisHaplo,], genotype)
-	#}
-	
-
 	return(validHaploList)
 }
 
@@ -136,6 +149,22 @@ listValidHaplotypes <- function(genotype,haplotypes, ploidy=2)  {
 
 # Tries to extract a single haplotype from a compound genotype and return, amongst other things, the remainder genotype.
 # this version to test and return if remaining alleles.
+#' Extract haplotype from genotype
+#' 
+#' Attempts to extract a haplotype from a genotype
+#'
+#' Tries to extract a single haplotype from a compound genotype and return, amongst other things,
+#' the remainder genotype.
+#' 
+#' @param haplotype The haplotype to be removed
+#' @param genotypeList The genotype in list of lists format.
+#' 
+#' @return A list giving the original haplotype extracted (haplotype), 
+#' a table of TRUE/FALSE for each locus with TRUE if the allele was successfully extracted (passTable),
+#' and a list giving the genotype remaining after extraction (remList). 
+#'
+#' @export
+#' @docType methods
 remGeno <- function(haplotype, genotypeList)  {
 	# haplotype should be a list, preferably named.
 	# and entries as alleles at each locus.
@@ -162,6 +191,20 @@ remGeno <- function(haplotype, genotypeList)  {
 }
 
 ## test if a single haplotype is consistent with a genotype.
+#' Test genotype for presence of haplotype
+#' 
+#' Test if a genotype contains a haplotype.
+#'
+#' An early implementation to test if a genotype contained a haplotype.
+#'	N.B. I don't think this is used anymore.
+#' 
+#' @param haplotype The haplotype as a one line data.frame
+#' @param genotypeList The genotype as a list of lists.
+#' 
+#' @return TRUE/FALSE if haplotype is present in the genotype
+#'
+#' @export
+#' @docType methods
 testHaploInGeno <- function(haplotype, genotypeList)  {
 	# haplotype should be one line dataframe with columns as loci names
 	# and entries as alleles at each locus.
@@ -193,6 +236,24 @@ testHaploInGeno <- function(haplotype, genotypeList)  {
 ## then call function
 ## then retrieve validGroups.
 #get("validHaploGroups", globalenv())
+#' Recurse to get haplo groups
+#' 
+#' Recursive function to extract valid groups of haplotypes explaining a genotype
+#'
+#' This recursive function subtracts haplotypes from a genotypes to find 'groups' 
+#' of haplotypes that can fully explain a genotype. To make the function general and
+#' cope with ploidy > 2, I made it recursive. It will keep going until it has run out 
+#' of genotype and/or it has run out of valid haplotypes.
+#' This should probably stay as an internal function because of its recursive nature.
+#' N.B.  requires access to a globally accessible storage variable: validHaploGroups
+#' 
+#' @param validHaplotypes A list of haplotypes to choose from 
+#' @param remGenotype The remaining part of the genotype
+#' @param group The valid group to this point.
+#' 
+#' @return NULL. N.B.  requires access to a globally accessible storage variable: validHaploGroups
+#'
+#' @docType methods
 recurseHaplos <- function(validHaplotypes, remGenotype, group) {
 	#print("New recurse")
 		#print("Rem geno, try more haplotypes")
@@ -229,6 +290,21 @@ recurseHaplos <- function(validHaplotypes, remGenotype, group) {
 }
 
 ##wrapper function to set up and control the recursive search for groups of haplotyps, each of which are consistent with the genotype in question.
+#' Get haplo groups for a genotype
+#' 
+#' Get all valid groups of haplotypes that fully explain a genotype.
+#'
+#' Wrapper function to set up and control the recursive search for groups of haplotyps, 
+#' each of which are consistent with the genotype in question. Makes use of recursion via
+#' the function  \code{\link{recurseHaplos}}
+#' 
+#' @param genotype The genotype in question. Can be data.frame or list of lists format
+#' @param haplotypes The set of candidate haplotypes.
+#' 
+#' @return A list of valid haplotype groups (each itself a list of haplotypes).
+#'
+#' @export
+#' @docType methods
 getValidHaploGroups <- function(genotype, haplotypes)  {
 
 	if(class(haplotypes) == "data.frame")  {
@@ -258,14 +334,6 @@ getValidHaploGroups <- function(genotype, haplotypes)  {
 	startRemGeno <- list()
 	startRemGeno[['remList']] <- genoList
 
-	#print(genoList)
-	#print(genoTable)
-	#print(haploList)
-	#print(haploTable)
-
-	#haploList<- haplotypes[listValidHaplotypes(thisGenotype, haplotypes )]
-	#haploList.valid <- listValidHaplotypes(thisGenotype, haplotypes )
-	#haploList.valid <- listValidHaplotypes(genoList[1], haploTable )
 	haploList.valid <- listValidHaplotypes(genoTable, haploTable )
 
 	assign("validHaploGroups", list(), globalenv() )
@@ -281,31 +349,24 @@ getValidHaploGroups <- function(genotype, haplotypes)  {
 }
 
 
-# creates a list of lists replacing haplotypes with their names from a full, named list of haplotypes.
-# will use this function 'temporarily' to match returned haplotypes with the originals.
-haploGroupsNamed <- function(haploListOfLists, fullHaploList)  {
-	# assume this is a list of list of lists
-	# TODO: check there is any data coming in (will not be if getValidHaploGroups() produced empty list).
-	resultList <- list()
-	if(length(haploListOfLists) < 1)  {
-		warning("Empty list of valid groups")
-	} else {
-		for(i in 1:length(haploListOfLists)) {
-			resultList[[i]] <- list()
-			thisGroup <- haploListOfLists[[i]]
-			for(j in 1:length(thisGroup)) {
-				resultList[[i]][j] <- names(fullHaploList[ match(thisGroup[j], fullHaploList)])
-			}
-		}
-	}
-	return(resultList)
-
-}
-
-#namedGroups <- haploGroupsNamed(result,fullHaploList )
 
 ## first attempt at assigning probabilities/likelihoods to competing haplotype groups.
 ## prints and summed log-likelihood and reconstituted (exp()) likelihood.
+#' Print haplo group probabilities
+#' 
+#' Print out haplotype groups and their relative probabilities
+#'
+#' This was a first attempt to order competing haplotype groups. It only prints and does not
+#'  return a useable object.
+#' 
+#' @param namedHaploGroups A list of haplotype groups (each a list) that explain a genotype.
+#' @param haploFrequencies A named numeric vector giving the probabilities of haplotypes. 
+#'  Names store the haplotype names.
+#' 
+#' @return Nothing. Prints only
+#'
+#' @export
+#' @docType methods
 printHaploProbs <- function(namedHaploGroups, haploFrequencies) {
 	for(i in 1:length(namedHaploGroups)) {	
 		thisGroup <- namedHaploGroups[[i]]
@@ -328,6 +389,19 @@ printHaploProbs <- function(namedHaploGroups, haploFrequencies) {
 
 
 # simple function to print out list of list haplotypes, one per line
+#' Print haplotype groups
+#' 
+#' Prints haplotype groups from a list.
+#'
+#' Works through a list of haplotype groups (quite a complex list structure) 
+#' and prints out one group per line. For presentation only, results cannot be re-used.
+#' 
+#' @param haploListOfLists A list of haplotype groups.
+#' 
+#' @return Nothing. Just prints.
+#'
+#' @export
+#' @docType methods
 printHaploGroups <- function(haploListOfLists)  {
 	# assume this is a list of list of lists
 	for(i in 1:length(haploListOfLists)) {
@@ -354,10 +428,22 @@ printHaploGroups <- function(haploListOfLists)  {
 
 
 
-## The recursive method of finding groups of consistent haplotypes does not differentiate,
-## re-arranged versions of the same set. e.g. keeps aaa/bbb AND bbb/aaa.
-##  This function removes that redundancy from the results.
-## uses the length of intersect to determine if two lists contain all the same elements. 
+
+#' Remove redundant haplotype groups
+#' 
+#' Removes redundant groups of haplotypes from a common list. 
+#'
+#' The recursive method \code{\link{recurseHaplos}} of finding groups of consistent haplotypes does not differentiate,
+#' re-arranged versions of the same set. e.g. keeps aaa/bbb AND bbb/aaa.
+#' This function removes that redundancy from the results.
+#' uses the length of intersect to determine if two lists contain all the same elements. 
+#' 
+#' @param startList A list of haplotype groups (each is a list of haplotypes).
+#' 
+#' @return  A list of haplotype groups but each group is unique.
+#'
+#' @export
+#' @docType methods
 reduceRedundantList <- function(startList)  {	
 	listLength <- length(startList)
 	if(listLength < 2) {
@@ -386,24 +472,24 @@ reduceRedundantList <- function(startList)  {
 }
 
 
-### NOT USED
-phasedGenotypes <- function(genotypeTable, haplotypeList, haploFreqs, genoHaploMap, popOfOrigin, popFreqs, ordering) {
-	
-	# check table of genotypes.
 
-
-	# order loci.
-
-	# look for perfect homozygotes as these are easy to score.
-
-
-
-	#
-	validHaplos <- listValidHaplotypes()
-
-}
-
+#### TODO this function uses grep to find columns for each locus. Potentially very bad if
+#### 		one locus name is a substring of another. e.g. HLA_1, HLA_10
 # converts a table genotype with multi columns per locus to a list with one item per locus, each listing the alleles present.
+#' Convert genotype table to list of lists
+#' 
+#' Converts a table of genotypes to a list of lists, one sub-list per genotype.
+#'
+#' Converts a table of genotypes to a list of lists, one sub-list per genotype.
+#' 
+#' @param genoTable A data.frame containg genotypes. One row per genotype. Multiple columns per locus
+#'   as per the ploidy. 
+#' @param locusNames A character vector of locus names.
+#' 
+#' @return genotypes as a list of lists
+#'
+#' @export
+#' @docType methods
 tableGenoToList <- function(genoTable, locusNames)  {
 	# need to check if only one row in genoTable
 	
@@ -417,6 +503,22 @@ tableGenoToList <- function(genoTable, locusNames)  {
 }
 
 # converts a table (with rownames) of haplotypes to a list of haplotypes.
+#' Haplotype table to haplotype list
+#' 
+#' Converts a data.frame of haplotypes to a list of lists with haplotypes
+#' at the top level and list of loci (with their alleles) beneath.
+#'
+#' Summary paragraph outlining method
+#' 
+#' @param haploTable A data.frame of alleles making up the haplotypes. One columm per locus, 
+#' 	one row per haplotype. 	The rownames should contain the haplotype ids.
+#' @param locusNames A character vector giving the names of the loci which should match
+#'  the column names of the haploTable
+#' 
+#' @return Haplotypes as a list of lists.
+#'
+#' @export
+#' @docType methods
 tableHaploToList <- function(haploTable, locusNames=colnames(haploTable))  {
 	haploList <- list()
 	for(thisRow in 1:nrow(haploTable)) {
@@ -434,6 +536,19 @@ tableHaploToList <- function(haploTable, locusNames=colnames(haploTable))  {
 
 # tableHaploToList(haplotypes[listValidHaplotypes(thisGenotype, haplotypes ),])
 
+#' Genotype list to genotype table
+#' 
+#' Converts a list of genotypes to a table with several columns per locus.
+#'
+#' The multiple columns per locus are differentiated with a numerical suffic. e.g. locA.1, locA.2
+#' 
+#' @param genoList A list of lists. One entry per genotype (sample) each containing a list of loci 
+#' to store the alleles. 
+#' 
+#' @return A data.frame a row for each genotype and n colums for each locus (where n is ploidy of locus)
+#'
+#' @export
+#' @docType methods
 listGenoToTable <- function(genoList) {
 	exportTable <- data.frame()
 	for(i in 1:length(genoList)) {
@@ -459,6 +574,20 @@ listGenoToTable <- function(genoList) {
 #listGenoToTable(list(tableGenoToList(thisGenotype, locusNames=c("A","B","C"))))
 
 
+
+#' Haplotype list to Haplotype table.
+#' 
+#' Converts a set of haplotypes from list format to table format
+#'
+#' Each list element becomes a row. Each locus becomes a column.
+#' 
+#' @param haploList A list of lists. One top level element per haplotype. 
+#' Each haplotype should be named and have the same set of loci as a sublist. 
+#' 
+#' @return A set of haplotypes in table format as a data.frame
+#'
+#' @export
+#' @docType methods
 listHaploToTable <- function(haploList)  {
 	exportTable <- data.frame()
 	for(i in 1:length(haploList)) {
@@ -472,6 +601,25 @@ listHaploToTable <- function(haploList)  {
 
 #listHaploToTable(fullHaploList)
 
+#' Best/all hapltype groups for a genotype
+#' 
+#' Attempts to find best/all haplotype groups that fully explain observed
+#' multi-locus genotypes.
+#'
+#' This wrapper function takes a set of genotypes, a set of haplotypes 
+#' and a set of haplotype frequencies and attempts to report either all
+#' groups or just the single most likely group of known haplotypes that
+#' fully explains each observed genotype.
+#' 
+#' @param genotypes The table/list of genotypes
+#' @param haplotypes The table/list of candidate haplotypes
+#' @param haploFreqs The frequencies of haplotypes as a named vector.
+#' @param outFormat Whether to output all valid haplotype groups or just the best (based on joint probability).
+#' 
+#' @return A data.frame of results...
+#'
+#' @export
+#' @docType methods
 phaseReport <- function(genotypes,haplotypes,haploFreqs,outFormat="all")   {
 	## do conversion for genotypes and haplotypes.
 	genoTable <- genotypes

@@ -1,9 +1,16 @@
+## TODO
+# TODO	 work examples into mlPhaser.R
+# TODO Write function for #thisLH <- getHaploGroupProb()
+
+
+
+
 
 
 
 ###############CURRENT RUN EXAMPLES
 source("C:/Users/Dave/HalfStarted/mlPhaser/mlPhaser.R")
-
+#library(mlPhaser)	# for testing production version
 
 
 haplotypes <- data.frame(	A= c("a","b","c","a","b","c","b"),
@@ -22,6 +29,7 @@ names(haploFreqs) <- rownames(haplotypes)
 my.genotypes <- simGenoFromHaplo(haploTable=haplotypes, haploFreqs=haploFreqs , 20) 
 
 source("C:/Users/Dave/HalfStarted/mlPhaser/mlPhaser.R")
+#library(mlPhaser)	# for testing production version
 thisGenotype <- my.genotypes[1,]
 thisGenotype <- my.genotypes[11,]		# was double heterozygote when developing (random result).
  listValidHaplotypes(thisGenotype, haplotypes )
@@ -42,25 +50,27 @@ printHaploGroups(result )	# what are the combinations (pretty formatting).
 fullHaploList <- tableHaploToList(haplotypes)		# could use this within above functions.
 
 
-namedGroups <- haploGroupsNamed(result,fullHaploList )
-printHaploProbs(namedGroups,haploFreqs )
+#namedGroups <- haploGroupsNamed(result,fullHaploList )
+#printHaploProbs(namedGroups,haploFreqs )
 
 
 # test to see if can work through all genotypes.
 
-for(i in 1:nrow(my.genotypes)) {
-	thisGenotype <- my.genotypes[i,]
-	print(thisGenotype)
-	result <- getValidHaploGroups(thisGenotype , haplotypes=haplotypes)
-	namedGroups <- haploGroupsNamed(result,fullHaploList )
-	printHaploProbs(namedGroups,haploFreqs )
-}
+#for(i in 1:nrow(my.genotypes)) {
+#	thisGenotype <- my.genotypes[i,]
+#	print(thisGenotype)
+#	result <- getValidHaploGroups(thisGenotype , haplotypes=haplotypes)
+#	namedGroups <- haploGroupsNamed(result,fullHaploList )
+#	printHaploProbs(namedGroups,haploFreqs )
+#}
 
 
 
 
 test <- phaseReport(genotypes=my.genotypes,haplotypes)
 test <- phaseReport(genotypes=my.genotypes,haplotypes, outFormat="top")
+test <- phaseReport(genotypes=my.genotypes,haplotypes,haploFreqs, outFormat="top")	# not working.
+
 
 ## TODO
 # Clean up!
@@ -89,6 +99,7 @@ test <- phaseReport(genotypes=my.genotypes,haplotypes, outFormat="top")
 
 # is the order of loci important? Not until recombination is involved (which it won't be for a while). 
 
+# Could it be used to define regions to sequence for unique id of alleles. Maybe, but quite a lot of sequence manipulation for that.
 
 # how to deal with missing data (NA)?
 
@@ -96,7 +107,7 @@ test <- phaseReport(genotypes=my.genotypes,haplotypes, outFormat="top")
 # how to deal with unknown haplotypes. e.g. when remGeno fails.  Perhaps test if genotype is solvable with know haplotypes before starting?
 # However, some may appear solvable but not be e.g.   ac,ab,cb   when available haplos are abb, aac, cbb
 # Might need to add in code to remgeno or recursion to allow for failure. 
-#Currently should fail (gracefully) to find combinations and provide empty list.
+# Currently should fail (gracefully) to find combinations and provide empty list.
 
 
 ## similar functions in existing packages
@@ -133,8 +144,8 @@ test <- phaseReport(genotypes=my.genotypes,haplotypes, outFormat="top")
 # load haploPhaser code (library)
 # call getValidHaploGroups() on each genotype and retain the results in useable format.
 #	may be 0,1 or more valid haplotype group combinations.
-# score/rank resulting groups based on haplotype frequencies (TODO)
-# output the results. 	(TODO)
+# score/rank resulting groups based on haplotype frequencies: phaseReport()
+# output the results. 	
 
 
 
