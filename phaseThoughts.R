@@ -130,7 +130,7 @@ test <- phaseReport(genotypes=my.genotypes,haplotypes,haploFreqs, outFormat="top
 # define the haplotype (which loci or sub-loci)
 # Obtain/build a knownAlleleDb
 # build haplotype table: loci as columns, haplotype names as rownames, alleles or sequences as data.
-# summarise haplotype table? (does it matter if not all unique? - currently permissive of duplicates on the presumptin that they will later be ranked on external frequency data).
+# summarise haplotype table? (does it matter if not all unique? - currently permissive of duplicates on the presumption that they will later be ranked on external frequency data).
 
 # obtain haplotype frequency data.  
 # TODO have multiple columns (or tables?) for different lines of evidence?
@@ -153,6 +153,8 @@ test <- phaseReport(genotypes=my.genotypes,haplotypes,haploFreqs, outFormat="top
 ##  could use custom callGenotypes to provide sequence as allele name. NO, could need to be replacement of 
 ## the master function as callGenotypes.default only received the table of frequencies, not the full mlgtResult object.
 
+#library(mlPhaser)
+source("C:/Users/Dave/HalfStarted/mlPhaser/mlPhaser.R")
 library(mlgt)
 Sys.setenv(BLASTALL_PATH="C:/Users/Public/Apps/Blast/bin/blastall.exe",
 		FORMATDB_PATH="C:/Users/Public/Apps/Blast/bin/formatdb.exe",
@@ -169,9 +171,9 @@ load("C:/Users/Dave/NextGen/DNAseqLab/TestProject/TestRun_09_03_2012_mlgt0.14/my
 my.mlgt.Result.HLA_09_03_2012
 
 myMarkerList <- read.fasta("C:/Users/Dave/NextGen/DNAseqLab/HLA_29_02_2012/HLA_HR_Markers_20120320.fasta", as.string=T)	
-#myPhasingMarkers <- myMarkerList[c("HLA_A2", "HLA_A3")]
-myPhasingMarkers <- myMarkerList[c("HLA_B2", "HLA_B3")]
-myPhasingMarkers <- myMarkerList[c("HLA_C2", "HLA_C3")]
+myPhasingMarkers <- myMarkerList[c("HLA_A2", "HLA_A3")]
+#myPhasingMarkers <- myMarkerList[c("HLA_B2", "HLA_B3")]
+#myPhasingMarkers <- myMarkerList[c("HLA_C2", "HLA_C3")]
 # the default method to callGenotypes
 #my.genoytpes <- callGenotypes(my.mlgt.Result)
 
@@ -231,9 +233,9 @@ for(thisMarker in names(myPhasingMarkers))  {
 
 ## Need to convert haplotypes to haplotype tables with column for each marker
 ## TODO: generalise this part.
-hlaHaploTable <- merge(hlaAlleTableList[["HLA_C2"]], hlaAlleTableList[["HLA_C3"]], by="allele")
+#hlaHaploTable <- merge(hlaAlleTableList[["HLA_C2"]], hlaAlleTableList[["HLA_C3"]], by="allele")
 #hlaHaploTable <- merge(hlaAlleTableList[["HLA_B2"]], hlaAlleTableList[["HLA_B3"]], by="allele")
-#hlaHaploTable <- merge(hlaAlleTableList[["HLA_A2"]], hlaAlleTableList[["HLA_A3"]], by="allele")
+hlaHaploTable <- merge(hlaAlleTableList[["HLA_A2"]], hlaAlleTableList[["HLA_A3"]], by="allele")
 rownames(hlaHaploTable) <- hlaHaploTable$allele
 hlaHaploTable <- subset(hlaHaploTable, select=-allele)
  str(hlaHaploTable)
@@ -297,9 +299,9 @@ for(thisMarker in names(myPhasingMarkers))  {
 	myTempGenotypes[[thisMarker]] <- subset(myTempGenotypes[[thisMarker]], select=c("sample", paste(thisMarker,1,sep="."),paste(thisMarker,2,sep=".")))
 }
 # need to generalise this section
-#my.genotypes.hla.refined <- merge(myTempGenotypes[['HLA_A2']],myTempGenotypes[['HLA_A3']], by="sample")
+my.genotypes.hla.refined <- merge(myTempGenotypes[['HLA_A2']],myTempGenotypes[['HLA_A3']], by="sample")
 #my.genotypes.hla.refined <- merge(myTempGenotypes[['HLA_B2']],myTempGenotypes[['HLA_B3']], by="sample")
-my.genotypes.hla.refined <- merge(myTempGenotypes[['HLA_C2']],myTempGenotypes[['HLA_C3']], by="sample")
+#my.genotypes.hla.refined <- merge(myTempGenotypes[['HLA_C2']],myTempGenotypes[['HLA_C3']], by="sample")
 
 rownames(my.genotypes.hla.refined) <- my.genotypes.hla.refined[,'sample']
 my.genotypes.hla.refined <- subset(my.genotypes.hla.refined, select=-sample)
@@ -319,6 +321,8 @@ my.genotypes.hla.refined
 
 listValidHaplotypes(my.genotypes.hla.refined[2,] , hlaHaploTable )
 
+getValidHaploGroups(my.genotypes.hla.refined[1,] , hlaHaploTable)
+getValidHaploGroups(my.genotypes.hla.refined[2,] , hlaHaploTable)
 getValidHaploGroups(my.genotypes.hla.refined[3,] , hlaHaploTable)
 getValidHaploGroups(my.genotypes.hla.refined[5,] , hlaHaploTable)
 
@@ -331,6 +335,8 @@ for(i in 1:nrow(my.genotypes.hla.refined))  {
 	print(result)
 }
 
+
+test <- phaseReport(my.genotypes.hla.refined,hlaHaploTable)
 
 # could have used either dna sequence or list of shared alleles as 'allele name'
 

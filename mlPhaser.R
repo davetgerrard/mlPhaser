@@ -185,6 +185,7 @@ remGeno <- function(haplotype, genotypeList)  {
 	}
 	if(sum(unlist(lapply(remList,length))) == 0) {
 		remList <- NULL
+		#remList <- list()	# better as empty list?
 	}
 
 	return(list(haplotype=haplotype, passTable=passTable,remList = remList))
@@ -267,7 +268,7 @@ recurseHaplos <- function(validHaplotypes, remGenotype, group) {
 				#myGroup <- c(group,remGeneList[['haplotype']])
 				#myGroup <- c(group,list(thisHaplotype))
 				myGroup <- c(group,thisHaplotype)
-				if( is.null(remGeneList[['remList']]) )  {
+				if(is.null(remGeneList[['remList']]) )  {
 					#print("Valid pair")
 					#print(myGroup)
 					#groupStore <- list()
@@ -336,15 +337,23 @@ getValidHaploGroups <- function(genotype, haplotypes)  {
 
 	haploList.valid <- listValidHaplotypes(genoTable, haploTable )
 
-	assign("validHaploGroups", list(), globalenv() )
-	# then call function
-	# then retrieve validGroups.
-	recurseHaplos(validHaplotypes=haploList.valid,startRemGeno[['remList']] ,
-				group=startGroup )
-	validHaploGroups <- get("validHaploGroups", envir=globalenv())
-	#rm(groupStorageEnv)
-	validHaploGroups.nonRedund <- reduceRedundantList(validHaploGroups )
-	rm(validHaploGroups, envir=globalenv())
+	if(length(haploList.valid) < 1)  {
+		validHaploGroups.nonRedund <- list()
+	} else {
+		assign("validHaploGroups", list(), globalenv() )
+		# then call function
+		# then retrieve validGroups.
+		recurseHaplos(validHaplotypes=haploList.valid,startRemGeno[['remList']] ,
+					group=startGroup )
+		validHaploGroups <- get("validHaploGroups", envir=globalenv())
+		#rm(groupStorageEnv)
+		validHaploGroups.nonRedund <- reduceRedundantList(validHaploGroups )
+		rm(validHaploGroups, envir=globalenv())
+	
+		if(length(validHaploGroups.nonRedund) < 1) {
+			validHaploGroups.nonRedund <- list()
+		}
+	}
 	return(validHaploGroups.nonRedund)
 }
 
@@ -654,19 +663,19 @@ phaseReport <- function(genotypes,haplotypes,haploFreqs,outFormat="all")   {
 		thisGenotype <- genoTable[i,]
 		genoName <- rownames(thisGenotype)
 		result <- getValidHaploGroups(thisGenotype , haplotypes=haploTable)
-		for(j in 1:length(result))  {
-			
-			#for(k in 1:length(names(result[[j]])))  {			
-			
-
-			#}	
-			if(missing(haploFreqs))  {
-				thisLH=NA	
-			} else {
-				thisLH <- getHaploGroupProb(result[[j]], haploFreqs=haploFreqs)
-			}
-			thisRow <- data.frame(id=genoName,n.validGroups = length(result),haploGroup=paste(sort(names(result[[j]])), collapse="/"), likelihood=thisLH)
+		if(length(result) < 1)  {
+			thisRow <- data.frame(id=genoName,n.validGroups = length(result),haploGroup=NA, likelihood=NA)
 			phaseResults <- rbind(phaseResults, thisRow)
+		} else {
+			for(j in 1:length(result))  {
+				if(missing(haploFreqs))  {
+					thisLH=NA	
+				} else {
+					thisLH <- getHaploGroupProb(result[[j]], haploFreqs=haploFreqs)
+				}
+				thisRow <- data.frame(id=genoName,n.validGroups = length(result),haploGroup=paste(sort(names(result[[j]])), collapse="/"), likelihood=thisLH)
+				phaseResults <- rbind(phaseResults, thisRow)
+			}
 		}
 			
 	}
