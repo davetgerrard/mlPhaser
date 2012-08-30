@@ -1,6 +1,6 @@
 ## TODO
 # TODO	 work examples into mlPhaser.R
-
+# TODO ?	update mlgt to provide sequence of allele in mlgtResult?
 
 
 
@@ -130,7 +130,8 @@ test <- phaseReport(genotypes=my.genotypes,haplotypes,haploFreqs, outFormat="top
 # define the haplotype (which loci or sub-loci)
 # Obtain/build a knownAlleleDb
 # build haplotype table: loci as columns, haplotype names as rownames, alleles or sequences as data.
-# summarise haplotype table? (does it matter if not all unique? - currently permissive of duplicates on the presumption that they will later be ranked on external frequency data).
+# summarise haplotype table? (does it matter if not all unique? 
+#	- currently permissive of duplicates on the presumption that they will later be ranked on external frequency data).
 
 # obtain haplotype frequency data.  
 # TODO have multiple columns (or tables?) for different lines of evidence?
@@ -140,7 +141,8 @@ test <- phaseReport(genotypes=my.genotypes,haplotypes,haploFreqs, outFormat="top
 # Call genotypes on an mlgtResult object
 # Get sequence from genotypes for each locus and allele as seq.1, seq.2 etc (or locusName.1, locusName.2 etc).
 # Refine based on genotype status (HOMOZYGOTE/HETEROZYGOTE/tooFewReads/complexVars)
-# Combine genotypes for all loci within the haplotype into a single table. Multiple columns per locus giving distinc allele data (homozygotes repeated).
+# Combine genotypes for all loci within the haplotype into a single table. 
+#	Multiple columns per locus giving distinct allele data (homozygotes repeated).
 
 # load haploPhaser code (library)
 # call getValidHaploGroups() on each genotype and retain the results in useable format.
@@ -207,41 +209,85 @@ for(thisMarker in names(myPhasingMarkers)) {
  		myPhasingMarkers[[thisMarker]][1], alleleAlignFile)
 }
 
+
+
+
+
+
+
+
 #save(knownAlleleDb, file="knownAlleleDb.testPhasing.HLA_B.Rdata")
 #save(knownAlleleDb, file="knownAlleleDb.testPhasing.Rdata")
 
 #load(
 
+## need to callGenotypes, leaving behind sequence or haplotype name as genotype allele.
+## Sequence will be compatible with haploTable method above. 
+## Give NA if NA. What about homozygotes?  
+
+my.genotypes.hla <- callGenotypes(my.mlgt.Result.HLA_09_03_2012, mapAlleles=TRUE,
+		alleleDb=knownAlleleDb)
+
+
 ### reformat the knownAlleleDb into a haploTypeTable.
 
-hlaAlleTableList <- list()
+## load a couple of functions to help remort mlgt results.
+source("C:/Users/Dave/HalfStarted/mlPhaser/mlgt_mlPhaser_Utils.R")
 
-for(thisMarker in names(myPhasingMarkers))  {
+hlaHaploTable <- alleleDbToHaploTable(knownAlleleDb, haploMarkerNames=names(myPhasingMarkers) )
 
-	#thisMarker <- "HLA_A2"
-	locusAlleleTable <- data.frame()
-	for(i in 1:length(knownAlleleDb[[thisMarker]]@variantMap))  {
-		thisVariant <- knownAlleleDb[[thisMarker]]@variantMap[i]
-		alleleNames <- unlist(strsplit(thisVariant[[1]],"_", fixed=T))
-		sequence <- names(thisVariant[1])
-		tempTable <- data.frame(allele=alleleNames,sequence=sequence)
-		locusAlleleTable <- rbind(locusAlleleTable,tempTable)
-	}
-	names(locusAlleleTable) <- c("allele", thisMarker) 
-	hlaAlleTableList[[thisMarker]] <- locusAlleleTable
-}
+my.genotypes.hla.table <- calledGenotypesToGenoTable(my.genotypes.hla, knownAlleleDb, markerNames = names(myPhasingMarkers) )
 
+## need to consolidate table to use proper sequence for homozygotes. 
+## NA for non-homozygotes/hetero
+
+## filter for complete.cases?
+
+## should now be callable with:-
+#hlaHaploTable 
+#my.genotypes.hla.refined 
+
+#listValidHaplotypes(my.genotypes.hla.table[2,] , hlaHaploTable )
+#test <- getValidHaploGroups(my.genotypes.hla.table[1,], haplotypes=haplotypes)
+
+result <- phaseReport(my.genotypes.hla.table, hlaHaploTable)
+
+
+
+# THIS FIRST ATTEMPT REPLACED WITH FUNCTION alleleDbToHaploTable()
+#hlaAlleTableList <- list()
+#
+#for(thisMarker in names(myPhasingMarkers))  {
+#
+#	#thisMarker <- "HLA_A2"
+#	locusAlleleTable <- data.frame()
+#	for(i in 1:length(knownAlleleDb[[thisMarker]]@variantMap))  {
+#		thisVariant <- knownAlleleDb[[thisMarker]]@variantMap[i]
+#		alleleNames <- unlist(strsplit(thisVariant[[1]],"_", fixed=T))
+#		sequence <- names(thisVariant[1])
+#		tempTable <- data.frame(allele=alleleNames,sequence=sequence)
+#		locusAlleleTable <- rbind(locusAlleleTable,tempTable)
+#	}
+#	names(locusAlleleTable) <- c("allele", thisMarker) 
+#	hlaAlleTableList[[thisMarker]] <- locusAlleleTable
+#}
+#
 ## Need to convert haplotypes to haplotype tables with column for each marker
 ## TODO: generalise this part.
 #hlaHaploTable <- merge(hlaAlleTableList[["HLA_C2"]], hlaAlleTableList[["HLA_C3"]], by="allele")
 #hlaHaploTable <- merge(hlaAlleTableList[["HLA_B2"]], hlaAlleTableList[["HLA_B3"]], by="allele")
-hlaHaploTable <- merge(hlaAlleTableList[["HLA_A2"]], hlaAlleTableList[["HLA_A3"]], by="allele")
-rownames(hlaHaploTable) <- hlaHaploTable$allele
-hlaHaploTable <- subset(hlaHaploTable, select=-allele)
- str(hlaHaploTable)
+#hlaHaploTable <- merge(hlaAlleTableList[["HLA_A2"]], hlaAlleTableList[["HLA_A3"]], by="allele")
+#rownames(hlaHaploTable) <- hlaHaploTable$allele
+#hlaHaploTable <- subset(hlaHaploTable, select=-allele)
+# str(hlaHaploTable)
 
 
 
+test <- alleleDbToHaploTable(knownAlleleDb )
+hlaHaploTable <- alleleDbToHaploTable(knownAlleleDb, haploMarkerNames=names(myPhasingMarkers) )
+
+
+## NO
 ## need to test if all haplotypes are unique (probably not if alleles defined
 ## by region not within markers selected).
 ### N.B. perhaps not. If want to use frequencies, then leave all combinations in. Even identical ones.
@@ -307,6 +353,14 @@ rownames(my.genotypes.hla.refined) <- my.genotypes.hla.refined[,'sample']
 my.genotypes.hla.refined <- subset(my.genotypes.hla.refined, select=-sample)
 
 
+## as above as a function
+
+
+
+genotypeList.refined <- calledGenotypesToGenoTable(my.genotypes.hla, knownAlleleDb, markerNames = names(myPhasingMarkers) )
+
+
+
 ## need to consolidate table to use proper sequence for homozygotes. 
 ## NA for non-homozygotes/hetero
 
@@ -328,12 +382,12 @@ getValidHaploGroups(my.genotypes.hla.refined[5,] , hlaHaploTable)
 
 result <- getValidHaploGroups(my.genotypes.hla.refined[1,], haplotypes=haplotypes)
 
-for(i in 1:nrow(my.genotypes.hla.refined))  {
-	print(my.genotypes.hla.refined[i,])
-	result <- getValidHaploGroups(my.genotypes.hla.refined[i,] , hlaHaploTable)
-	print(length(result))
-	print(result)
-}
+#for(i in 1:nrow(my.genotypes.hla.refined))  {
+#	print(my.genotypes.hla.refined[i,])
+#	result <- getValidHaploGroups(my.genotypes.hla.refined[i,] , hlaHaploTable)
+#	print(length(result))#
+#	print(result)
+#}
 
 
 test <- phaseReport(my.genotypes.hla.refined,hlaHaploTable)
