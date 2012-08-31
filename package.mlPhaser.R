@@ -27,10 +27,10 @@ roxygenize("mlPhaser", unlink.target=T)
 ## Install the new package version
 ###Generate the README 
 
-setwd("C:/Users/dave/HalfStarted/mlPhaser/testREADME")
-Sweave("../mlPhaser_README")	# from sub-directory up to main mlPhaser directory
-#R CMD texify --pdf mlPhaser_README.tex
-Stangle("../mlPhaser_README")
+setwd("C:/Users/dave/HalfStarted/mlPhaser/package/mlPhaser/vignettes")
+Sweave("mlPhaser.Rnw")	# apparently the extension is important.
+#R CMD texify --pdf mlPhaser.tex
+Stangle("mlPhaser")
 ##Sweave("../mlPhaser_README_0_16")	# from sub-directory up to main mlPhaser directory
 ###R CMD texify --pdf mlPhaser_README_0_16.tex
 ##Stangle("../mlPhaser_README_0_16")
