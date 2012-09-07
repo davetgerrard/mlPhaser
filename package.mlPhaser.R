@@ -20,6 +20,7 @@ roxygenize("mlPhaser", unlink.target=T)
 #R CMD INSTALL --build mlPhaser	# to get windows zip
 
 
+#remove.packages('mlPhaser')
 
 
 
@@ -27,9 +28,10 @@ roxygenize("mlPhaser", unlink.target=T)
 ## Install the new package version
 ###Generate the README 
 
-setwd("C:/Users/dave/HalfStarted/mlPhaser/package/mlPhaser/vignettes")
-Sweave("mlPhaser.Rnw")	# apparently the extension is important.
-#R CMD texify --pdf mlPhaser.tex
+#setwd("C:/Users/dave/HalfStarted/mlPhaser/package/mlPhaser/vignettes")
+setwd("C:/Users/dave/HalfStarted/mlPhaser/package/mlPhaser/inst/doc")
+Sweave("vignette.Rnw")	# apparently the extension is important.
+#R CMD texify --clean --pdf vignette.tex
 Stangle("mlPhaser")
 ##Sweave("../mlPhaser_README_0_16")	# from sub-directory up to main mlPhaser directory
 ###R CMD texify --pdf mlPhaser_README_0_16.tex
